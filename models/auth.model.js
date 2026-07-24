@@ -7,12 +7,6 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 export const signUpNewUser = async (data) => {
   const { name, uid, email, iat, picture } = data;
-  const hs = (await db.ref("users/").once("value")).val();
-  let uo = hs ? Object.values(hs) : [];
-  uo = uo.find(e => e.email == email);
-  if(uo) {
-    return null;
-  }
   await db.ref(`users/${uid}`).update({
     username: name,
     email: email,
@@ -20,7 +14,30 @@ export const signUpNewUser = async (data) => {
     iat: iat,
     picture: picture
   });
-  return { name, uid };
+  const token = jwt.sign({ uid, email }, JWT_SECRET, { expiresIn: "2d" });
+  return { token };
+}
+
+export const signUpNewUserEmail = async (data) => {
+  try {
+    const { name, uid, email, iat } = data;
+    const usr = (await db.ref("users/").once("value"));
+    let uobj = usr.exists() ? Object.values(usr.val()) : [];
+    uobj = uobj.find(u => u.email == email);
+    if(uobj) return null;
+    await db.ref(`users/${uid}`).update({
+      username: name,
+      email: email,
+      uid: uid,
+      iat: iat,
+      picture: ""
+    });
+    const token = jwt.sign({ uid, email }, JWT_SECRET, { expiresIn: "2d" });
+    return { token };
+  } catch(err) {
+    console.log(err);
+    return null;
+  }
 }
 
 export const signInUser = (data) => {
