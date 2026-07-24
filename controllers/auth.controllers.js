@@ -62,7 +62,8 @@ export const signUpWithGoogle = async (req, res) => {
     const userExists = await checkEmailExists(email);
     const userExistsUid = await getUserByUid(uid);
     if (userExists || userExistsUid) {
-      return res.status(409).json({ message: "User already exists" });
+      const tk = signInUser({uid, email});
+      return res.status(201).json({ token: tk });
     }
     const appToken = await createUserAndToken(userData, name, picture);
     return res.status(201).json({ token: appToken });
