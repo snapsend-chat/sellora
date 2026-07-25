@@ -6,6 +6,8 @@ import authRouter from "./routes/auth.routes.js";
 
 import userRouter from "./routes/user.routes.js";
 
+import authMiddleware from "./middleware/auth.middleware.js";
+
 const PORT = process.env.PORT;
 
 const app = express();
@@ -16,7 +18,9 @@ app.use(cors());
 
 app.use("/api/v1/auth", authRouter);
 
-app.use("/api/v1/users", userRouter);
+app.use("/api/v1/users", authMiddleware, userRouter);
+
+//app.use("/api/v1/products", userRouter);
 
 
 app.get("/", (req, res) => {
